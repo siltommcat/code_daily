@@ -83,7 +83,7 @@ def load_test_data(filename,limit_len,words_dict,label_dict):
 def get_batch(batch_size, data_x, data_y, data_len):
     i = 0
     while i+batch_size < len(data_len):
-        print(i)
+        # print(i)
         yield data_x[i:i+batch_size],data_y[i:i+batch_size] , data_len[i:i+batch_size]
         i +=  batch_size
     yield data_x[i:], data_y[i:], data_len[i:]

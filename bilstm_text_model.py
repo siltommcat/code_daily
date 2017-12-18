@@ -1,4 +1,5 @@
 import tensorflow as tf
+
 import numpy as np
 import data_helper
 from tensorflow.contrib.rnn import LSTMCell
@@ -8,10 +9,9 @@ from tensorflow.python.ops.rnn import bidirectional_dynamic_rnn as birnn
 voc_size = 10000
 batch_size = 64
 seqlen = 35
-learn_rate = 0.05
+learn_rate = 0.1
 n_class = 2
 embedding_size = 100
-
 class bilstm_text():
     def __init__(self,voc_size,batch_size,seq_limit_len,n_class,embedding_size,learn_rate):
         #参数设置
@@ -47,19 +47,22 @@ class bilstm_text():
     def bilstm(self):
         fwcell = LSTMCell(self._embedding_size)
         bwcell = LSTMCell(self._embedding_size)
-        print("bisltm")
         out_bilstm, final_state = birnn(fwcell, bwcell, inputs=self.embedding, sequence_length=self.seqlen_hdr, dtype=tf.float32)
         return out_bilstm,final_state
-def test(test_x, test_y, seqlen_test):
+def test(model,test_x, test_y, seqlen_test):
 
-    model = bilstm_text(voc_size, batch_size, seqlen, n_class, embedding_size, learn_rate)
     sess = tf.Session()
     init = tf.global_variables_initializer()
     sess.run(init)
     op_acc = model.acc
     op_pred = model.pred
-    test_pred, acc_test = sess.run(op_pred, op_acc, feed_dict={model.inputs:test_x,model.outputs:test_y,model.seqlen_hdr:seqlen_test})
-    print(metrics.classification_report(np.array(test_y), np.array(test_pred)))
+
+    test_pred, acc_test = sess.run([op_pred, op_acc], feed_dict={model.inputs:test_x,model.outputs:test_y,model.seqlen_hdr:seqlen_test})
+    test_y = sess.run(tf.argmax(test_y,1))
+    #run之后得到的不是tensor 是narray
+    #这个函数必须要是list
+    print(metrics.classification_report(test_y, test_pred))
+    # print(metrics.classification_report(np.array(test_y).tolist(), np.array(test_pred).tolist()))
     # batchs = data_helper.get_batch(test_x,test_y,seqlen_test)
     # for batch_x,batch_y,batch_len in batchs:
     #     test_pred,acc_test = sess.run(op_pred,op_acc,feed_dict={model.inputs:batch_x,model.outputs:batch_y,model.seqlen_hdr:batch_len})
@@ -77,17 +80,19 @@ def train():
     sess.run(init)
     epoachs = 50
     cnt = 0
+
     for epoach in range(epoachs):
         batchs = data_helper.get_batch(64, train_x, train_y, seqlen_all)
         for batch_x,batch_y, batch_len in batchs:
-            if cnt== 307:
-                continue
-            else:
-                [_,train_acc] = sess.run([op_train,op_acc],feed_dict={model.inputs:batch_x,model.outputs:batch_y,model.seqlen_hdr:batch_len})
-                print("{0} epoach {1} iters acc = {2}".format(epoach,cnt,train_acc))
+            [_,train_acc] = sess.run([op_train,op_acc],feed_dict={model.inputs:batch_x,model.outputs:batch_y,model.seqlen_hdr:batch_len})
+            print("{0} epoach {1} iters acc = {2}".format(epoach,cnt,train_acc))
+            if cnt % 50 == 0:
+                tmp_pred = sess.run(op_pred,feed_dict={model.inputs:batch_x,model.outputs:batch_y,model.seqlen_hdr:batch_len})
+                print(tmp_pred)
+                test(model, test_x, test_y, seqlen_test)
             cnt += 1
         print("---------test----------------")
-        test(test_x, test_y, seqlen_test)
+        test(model,test_x, test_y, seqlen_test)
 if __name__ == "__main__":
 
     train()
