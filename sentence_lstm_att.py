@@ -10,9 +10,12 @@ seqlen = 35
 learn_rate = 0.05
 n_class = 2
 embedding_size = 100
-train_x,train_y,words_dict,labels_dict,seqlen_all = data_helper.load("../data/train.txt", 10000, 35)
+class sentence_lstm_att():
+    def __init__(self):
+
+train_x,train_y,words_dict,labels_dict,seqlen_all = data_helper.load("train.txt", 10000, 35)
 one_hot_label = tf.one_hot(train_y,n_class)
-test_x,test_y,seqlen_test = data_helper.load_test_data("../data/test_filter_2.txt", seqlen, words_dict, labels_dict)
+test_x,test_y,seqlen_test = data_helper.load_test_data("test_filter_2.txt", seqlen, words_dict, labels_dict)
 # seqlen_all = np.array(seqlen_all)*10
 inputs = tf.placeholder(tf.int64,[None,seqlen],name="seq_inputs")
 outputs = tf.placeholder(tf.int64,[None,2],name= "outputs")
@@ -93,7 +96,7 @@ sess.run(init)
 def test(sess,acc,test_x,test_y,test_len):
     acc_test = sess.run(acc,feed_dict={inputs:test_x,outputs:test_y,seqlen_hdr:test_len})
     print("test acc:",acc_test)
-for epoach in range(50):
+for epoach in range(200):
     batchs = data_helper.get_batch(64, train_x, train_y, seqlen_all)
     cnt = 0
     for batch_x,batch_y, batch_len in batchs:

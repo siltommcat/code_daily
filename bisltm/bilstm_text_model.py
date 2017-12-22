@@ -9,7 +9,7 @@ from tensorflow.python.ops.rnn import bidirectional_dynamic_rnn as birnn
 voc_size = 10000
 batch_size = 64
 seqlen = 35
-learn_rate = 0.1
+learn_rate = 0.05
 n_class = 2
 embedding_size = 100
 class bilstm_text():
@@ -61,6 +61,7 @@ def test(model,test_x, test_y, seqlen_test):
     test_y = sess.run(tf.argmax(test_y,1))
     #run之后得到的不是tensor 是narray
     #这个函数必须要是list
+    print("test-->all acc:",acc_test)
     print(metrics.classification_report(test_y, test_pred))
     # print(metrics.classification_report(np.array(test_y).tolist(), np.array(test_pred).tolist()))
     # batchs = data_helper.get_batch(test_x,test_y,seqlen_test)

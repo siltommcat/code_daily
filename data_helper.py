@@ -1,3 +1,4 @@
+import os
 import collections
 import numpy as np
 import tensorflow as tf
@@ -23,6 +24,8 @@ def load(filename,voc_size,seqlen):
     words_set = []
     res_split = []
     all_len = []
+
+    print(os.getcwd())
     with open(filename,"r") as f:
         for line in f.readlines():
             label,words = line.strip().split("\t")
